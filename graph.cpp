@@ -21,7 +21,7 @@ std::ostream & operator<<(std::ostream &os, Vertex const &v)
   return os;
 }
 
-ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine generator)
+ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine &generator)
   : size(_size)
 {
   std::uniform_real_distribution<double> distribution(0.0,1.0);

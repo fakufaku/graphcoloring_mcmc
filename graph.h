@@ -19,7 +19,7 @@ class ErdosRenyi
     int size;
     vector<Vertex> vertices;
 
-    ErdosRenyi(int size, double p, int q, default_random_engine generator);
+    ErdosRenyi(int size, double p, int q, default_random_engine &generator);
 
     int delta_h(int u, int new_color);
     int hamiltonian();

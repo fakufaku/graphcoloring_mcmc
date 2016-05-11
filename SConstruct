@@ -1,1 +1,1 @@
-Program(['main.cpp', 'graph.cpp'])
+Program(['main.cpp', 'graph.cpp', 'mcmc.cpp'])

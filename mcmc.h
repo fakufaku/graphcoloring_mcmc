@@ -14,13 +14,14 @@ class MCMC
     vector<double> energy;
 
     default_random_engine generator;
-    uniform_int_distribution<int> dist_color(1,10);
-    uniform_int_distribution<int> dist_vertices(0,9);
-    std::uniform_real_distribution<double> dist_U(0.0, 1.0);
+    uniform_int_distribution<int> *dist_color;
+    uniform_int_distribution<int> *dist_vertices;
+    uniform_real_distribution<double> *dist_U;
 
     ErdosRenyi *graph;
 
-    MCMC(int N, int c, int q, default_random_engine generator);
+    MCMC(int N, int c, int q, default_random_engine &generator);
+    ~MCMC();
 
     void move();
     void cool();
