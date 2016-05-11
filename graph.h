@@ -9,7 +9,6 @@ class Vertex
     int color;
 
     Vertex(int _c);
-    ~Vertex();
 
     friend std::ostream &operator<<(std::ostream &os, Vertex const &m);
 };
@@ -20,8 +19,10 @@ class ErdosRenyi
     int size;
     vector<Vertex> vertices;
 
-    ErdosRenyi(int size, double p);
-    ~ErdosRenyi();
+    ErdosRenyi(int size, double p, int q, default_random_engine generator);
+
+    int delta_h(int u, int new_color);
+    int hamiltonian();
 
     friend std::ostream &operator<<(std::ostream &os, ErdosRenyi const &m);
 };

@@ -1,2 +1,1 @@
-Object('graph.cpp')
-Program('main.cpp')
+Program(['main.cpp', 'graph.cpp'])
