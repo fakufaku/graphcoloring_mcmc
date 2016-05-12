@@ -2,7 +2,7 @@
 #include <chrono>
 #include <random>
 
-#include "graph.h"
+#include "mcmc.h"
 
 using namespace std;
 
@@ -17,10 +17,11 @@ int main(int argc, char** argv)
   unsigned seed = d.count();
   std::default_random_engine generator(seed);
 
-  // Create a graph
-  ErdosRenyi g(10, 0.5, 4, generator);
+  // Create the MCMC
+  MCMC chain(1000, 100, 7, generator);
 
-  cout << g;
+  chain.run(1000000);
+  chain.save();
 
   return 0;
 }

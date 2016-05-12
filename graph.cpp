@@ -50,10 +50,12 @@ ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine &gener
 
 int ErdosRenyi::delta_h(int u, int new_color)
 {
-  int delta;
+  int delta = 0;
 
-  for (int v = 0 ; v < this->vertices[u].neighbors.size() ; v++)
+  for (int i = 0 ; i < this->vertices[u].neighbors.size() ; i++)
   {
+    int v = this->vertices[u].neighbors[i];
+
     if (new_color == this->vertices[v].color)
       delta++;
 
@@ -73,7 +75,7 @@ int ErdosRenyi::hamiltonian()
   
   for (auto u = this->vertices.begin(); u != this->vertices.end(); ++u)
     for (int v = 0 ; v < u->neighbors.size() ; v++)
-      if (u->color == this->vertices[v].color)
+      if (u->color == this->vertices[u->neighbors[v]].color)
         H++;
 
   return H/2;

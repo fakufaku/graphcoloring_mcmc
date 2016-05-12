@@ -1,13 +1,16 @@
 
+#include <iostream>
 #include <random>
 #include <math.h>
+#include <iostream>
+#include <fstream>
 #include "mcmc.h"
 
 MCMC::MCMC(int N, int c, int q, default_random_engine &_generator)
   :generator(_generator)
 {
   this->time = 0;
-  this->beta = 1.;
+  this->beta = 0.;
   this->graph = new ErdosRenyi(N, (double)c/N, q, _generator);
 
   // update all distributions
@@ -17,6 +20,7 @@ MCMC::MCMC(int N, int c, int q, default_random_engine &_generator)
 
   // initial energy
   this->energy.push_back(this->graph->hamiltonian());
+  this->beta_history.push_back(this->beta);
 }
 
 MCMC::~MCMC()
@@ -68,11 +72,30 @@ void MCMC::move()
   }
 
   // update energy
+  //this->energy.push_back(this->graph->hamiltonian());
   this->energy.push_back(this->energy[this->energy.size()-1] + delta);
+  this->beta_history.push_back(this->beta);
 }
 
 void MCMC::cool()
 {
   // here we will update the value of beta
+  this->beta += 0.00001;
+  if (this->time == 200000)
+    this->beta /= 10;
 }
 
+void MCMC::run(int n_steps)
+{
+  for (int i ; i < n_steps ; i++)
+    this->move();
+}
+
+void MCMC::save()
+{
+  ofstream myfile;
+  myfile.open ("mcmc.txt");
+  for (int i = 0 ; i < this->time ; i++)
+    myfile << this->beta_history[i] << " " << this->energy[i] << endl;
+  myfile.close();
+}

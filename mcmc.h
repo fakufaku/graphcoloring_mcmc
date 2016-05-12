@@ -11,6 +11,7 @@ class MCMC
     int c;
     int q;
     double beta;
+    vector<double> beta_history;
     vector<double> energy;
 
     default_random_engine generator;
@@ -25,4 +26,7 @@ class MCMC
 
     void move();
     void cool();
+    void run(int n_steps);
+
+    void save();
 };
