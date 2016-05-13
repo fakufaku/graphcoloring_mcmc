@@ -4,6 +4,13 @@
 
 #include "mcmc.h"
 
+#define N_GRAPH 1000
+#define N_STEPS 5000000
+#define Q_MIN 85
+#define Q_MAX 85
+#define C_MIN 495
+#define C_MAX 505
+
 using namespace std;
 
 int main(int argc, char** argv)
@@ -17,11 +24,24 @@ int main(int argc, char** argv)
   unsigned seed = d.count();
   std::default_random_engine generator(seed);
 
-  // Create the MCMC
-  MCMC chain(1000, 100, 7, generator);
+  MCMC *chain;
 
-  chain.run(1000000);
-  chain.save();
+  for (int q = Q_MIN ; q <= Q_MAX ; q += 3)
+  {
+    for (int c = C_MIN ; c <= C_MAX ; c += 1)
+    {
+      // Create the MCMC
+      chain = new MCMC(N_GRAPH, c, q, generator);
+
+      chain->run(N_STEPS);
+      cout << q << " " << c << " " << chain->get_energy() << endl;
+
+      delete chain;
+    }
+  }
+
+  chain->save();
+
 
   return 0;
 }

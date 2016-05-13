@@ -21,6 +21,7 @@ class ErdosRenyi
 
     ErdosRenyi(int size, double p, int q, default_random_engine &generator);
 
+    int is_coloring_legal(int u);
     int delta_h(int u, int new_color);
     int hamiltonian();
 

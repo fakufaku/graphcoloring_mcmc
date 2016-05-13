@@ -11,6 +11,7 @@ class MCMC
     int c;
     int q;
     double beta;
+    double H;
     vector<double> beta_history;
     vector<double> energy;
 
@@ -27,6 +28,8 @@ class MCMC
     void move();
     void cool();
     void run(int n_steps);
+
+    double get_energy() { return this->energy.back(); };
 
     void save();
 };

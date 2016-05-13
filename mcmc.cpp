@@ -6,11 +6,13 @@
 #include <fstream>
 #include "mcmc.h"
 
+using namespace std;
+
 MCMC::MCMC(int N, int c, int q, default_random_engine &_generator)
   :generator(_generator)
 {
   this->time = 0;
-  this->beta = 0.;
+  this->beta = 1.e-2;
   this->graph = new ErdosRenyi(N, (double)c/N, q, _generator);
 
   // update all distributions
@@ -19,7 +21,8 @@ MCMC::MCMC(int N, int c, int q, default_random_engine &_generator)
   this->dist_U = new uniform_real_distribution<double>(0.0, 1.0);
 
   // initial energy
-  this->energy.push_back(this->graph->hamiltonian());
+  this->H = this->graph->hamiltonian();
+  this->energy.push_back(this->H);
   this->beta_history.push_back(this->beta);
 }
 
@@ -38,7 +41,7 @@ void MCMC::move()
   // reduce the temperature according to schedule
   this->cool();
 
-  // pick vertex at random
+  // pick vertex at random (that is not legally colored
   int v = (*this->dist_vertices)(this->generator);
 
   // pick color at random (diff from v)
@@ -61,34 +64,45 @@ void MCMC::move()
     
     // accept move wp exp(-beta*delta)
     if (p < exp(-this->beta*delta))
-    {
       this->graph->vertices[v].color = c;
-    }
     else
-    {
       // energy doesn't change
       delta = 0;
-    }
   }
 
   // update energy
-  //this->energy.push_back(this->graph->hamiltonian());
-  this->energy.push_back(this->energy[this->energy.size()-1] + delta);
+  this->H += delta;
+  this->energy.push_back(this->H);
+
+  // if we did a move uphill, rewind beta
+  if (delta > 0)
+    this->beta = this->beta_history.back();
+
+  // save beta in the history
   this->beta_history.push_back(this->beta);
 }
 
 void MCMC::cool()
 {
-  // here we will update the value of beta
-  this->beta += 0.00001;
-  if (this->time == 200000)
-    this->beta /= 10;
+#define ALPHA 0.005
+  double dE = this->energy.back() - this->energy[this->energy.size()-2];
+  //if (dE < 0.)
+    if (this->time % ((this->time/60000 + 1)*2000) == 0)
+      //this->beta *= 1. + this->energy.back()/this->graph->size;
+      this->beta *= 1.105;
+    if (this->beta > this->energy[0])
+      this->beta = this->energy[0];
+
 }
 
 void MCMC::run(int n_steps)
 {
   for (int i ; i < n_steps ; i++)
+  {
     this->move();
+    if (this->H == 0)
+      return;
+  }
 }
 
 void MCMC::save()

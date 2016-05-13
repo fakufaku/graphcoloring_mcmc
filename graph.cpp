@@ -48,6 +48,21 @@ ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine &gener
     }
 }
 
+int ErdosRenyi::is_coloring_legal(int u)
+{
+  // check if a vertex is legally colored 
+  
+  for (int i = 0 ; i < this->vertices[u].neighbors.size() ; i++)
+  {
+    int v = this->vertices[u].neighbors[i];
+
+    if (this->vertices[u].color == this->vertices[v].color)
+      return false;
+  }
+
+  return true;
+}
+
 int ErdosRenyi::delta_h(int u, int new_color)
 {
   int delta = 0;
