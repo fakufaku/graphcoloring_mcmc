@@ -8,8 +8,9 @@
 
 using namespace std;
 
-MCMC::MCMC(Graph *G, int q, default_random_engine &_generator)
-  :generator(_generator), graph(G)
+MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
+    int32_t *_energy_history, double *_beta_history)
+  :generator(_generator), graph(G), energy(_energy_history), beta_history(_beta_history)
 {
   this->time = 0;
   this->beta = 1.e-2;
@@ -21,8 +22,13 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator)
 
   // initial energy
   this->H = this->graph->hamiltonian();
-  this->energy.push_back(this->H);
-  this->beta_history.push_back(this->beta);
+  this->H0 = this->H;
+
+  // save history
+  if (this->energy != NULL)
+    this->energy[0] = this->H;
+  if (this->beta_history != NULL)
+    this->beta_history[0] = this->beta;
 }
 
 MCMC::~MCMC()
@@ -46,7 +52,7 @@ void MCMC::move()
     c++;
 
   // compute delta H
-  int delta = this->graph->delta_h(v, c);
+  delta = this->graph->delta_h(v, c);
 
   if (delta <= 0)
   {
@@ -68,45 +74,50 @@ void MCMC::move()
 
   // update energy
   this->H += delta;
-  this->energy.push_back(this->H);
   
   // reduce the temperature according to schedule
   this->cool();
 
-  // if we did a move uphill, rewind beta
-  if (delta > 0)
-    this->beta = this->beta_history.back();
-
-  // save beta in the history
-  this->beta_history.push_back(this->beta);
+  // save the history
+  if (this->energy != NULL)
+    this->energy[time] = this->H;
+  if (this->beta_history != NULL)
+    this->beta_history[time] = this->beta;
 }
 
 void MCMC::cool()
 {
   static int stuck_count = 0;
 
-  double dE = this->energy.back() - this->energy[this->energy.size()-2];
-  if (dE < 0)
-    dE = -dE;
-
-  if (dE == 0)
-    stuck_count++;
+  // This schedule works great for q=3 d=4
+  /*
+  if (this->H > 100)
+  {
+    if (this->time % 4000 == 0)
+        this->beta *= 1.105;
+  }
+  else if (this->H > 50)
+  {
+    if (this->time % 40000 == 0)
+        this->beta *= 1.105;
+  }
+  else if (this->H > 10)
+  {
+    if (this->time % 400000 == 0)
+        this->beta *= 1.05;
+  }
   else
-    stuck_count = 0;
+  {
+    if (this->time % 400000 == 0)
+        this->beta *= 1.01;
+  }
+  */
 
   if (this->time % ((this->time/60000 + 1)*2000) == 0)
-  {
-    if (stuck_count > 1000)
-    {
-      this->beta /= 1.11;
-      stuck_count = 0;
-    }
-    else
       this->beta *= 1.105;
-  }
 
-  if (this->beta > this->energy[0])
-    this->beta = this->energy[0];
+  if (this->beta > this->H0)
+    this->beta = this->H0;
 
 }
 

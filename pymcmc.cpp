@@ -16,15 +16,16 @@
 static PyObject*
 color_graph (PyObject *dummy, PyObject *args)
 {
-    PyObject *arg1=NULL, *out=NULL, *ret;
-    PyArrayObject *arr1=NULL, *oarr=NULL;
+    PyObject *arg1=NULL, *out=NULL, *out2=NULL, *out3=NULL, *ret=NULL;
+    PyArrayObject *arr1=NULL, *oarr=NULL, *barr=NULL, *earr=NULL;
     int q = 5;
     int num_iter = 1000;
     int energy = -1;
-    int arr1_nd, oarr_nd;
-    int arr1_type, oarr_type;
-    npy_intp *arr1_shape, *oarr_shape;
-    int16_t *adjacency, *output_vector;
+    int arr1_nd, oarr_nd, barr_nd, earr_nd;
+    npy_intp *arr1_shape, *oarr_shape, *barr_shape, *earr_shape;
+    int16_t *adjacency = NULL, *output_vector = NULL;
+    double *beta_history = NULL;
+    int32_t *energy_history = NULL;
     Graph *G;
     int graph_size;
     MCMC *mcmc;
@@ -39,10 +40,8 @@ color_graph (PyObject *dummy, PyObject *args)
     std::default_random_engine generator(seed);
 
     // Parse the input arguments of the function
-    if (!PyArg_ParseTuple(args, "OiiO!", &arg1, &q, &num_iter,
-        &PyArray_Type, &out)) return NULL;
-    cout << "Start with q=" << q << " num_iter=" << num_iter << endl;
-    cout.flush();
+    if (!PyArg_ParseTuple(args, "OiiO!O!O!", &arg1, &q, &num_iter,
+        &PyArray_Type, &out, &PyArray_Type, &out2, &PyArray_Type, &out3)) return NULL;
 
     // First argument is the adjacency matrix of a graph
     arr1 = (PyArrayObject*)PyArray_FROM_OTF(arg1, NPY_INT16, NPY_IN_ARRAY);
@@ -62,6 +61,22 @@ color_graph (PyObject *dummy, PyObject *args)
       cout << "Could not get pointer to return vector." << endl;
       goto fail;
     }
+    
+    // Fourth argument is used to store the history of energy
+    earr = (PyArrayObject*)PyArray_FROM_OTF(out2, NPY_INT32, NPY_INOUT_ARRAY);
+    if (earr == NULL)
+    {
+      cout << "Could not get pointer to return cost vector." << endl;
+      goto fail;
+    }
+    
+    // Fifth argument is used to store the history of beta
+    barr = (PyArrayObject*)PyArray_FROM_OTF(out3, NPY_DOUBLE, NPY_INOUT_ARRAY);
+    if (barr == NULL)
+    {
+      cout << "Could not get pointer to return cost vector." << endl;
+      goto fail;
+    }
 
     /*vv* code that makes use of arguments *vv*/
 
@@ -78,14 +93,6 @@ color_graph (PyObject *dummy, PyObject *args)
       cout << "Adjacency matrix not square." << endl;
       goto fail;
     }
-    arr1_type = PyArray_TYPE(arr1); // check the type is int16
-    cout << "Data type: " << arr1_type << endl;
-    cout << "NPY_INT16=" << NPY_INT16 << endl;
-    if (arr1_type != NPY_INT16) 
-    {
-      cout << "Adjacency matrix should be of type int16." << endl;
-      goto fail;
-    }
 
     // Now some checks on the output array
     oarr_nd = PyArray_NDIM(oarr);
@@ -100,12 +107,28 @@ color_graph (PyObject *dummy, PyObject *args)
       cout << "Output vector should have length matching adjacency matrix." << endl;
       goto fail;
     }
-    oarr_type = PyArray_TYPE(oarr); // check the type is int16
-    if (oarr_type != NPY_INT16) 
+
+    // Now some checks on the energy_history vector
+    earr_nd = PyArray_NDIM(earr);
+    if (earr_nd != 1)
     {
-      cout << "Output vector type should be int16." << endl;
+      cout << "Cost output vector should be 1D." << endl;
       goto fail;
     }
+    earr_shape = PyArray_DIMS(earr);
+    if (earr_shape[0] == num_iter+1)
+      energy_history = (int32_t *)PyArray_DATA(earr);
+
+    // Now some checks on the beta_history vector
+    barr_nd = PyArray_NDIM(barr);
+    if (barr_nd != 1)
+    {
+      cout << "Cost output vector should be 1D." << endl;
+      goto fail;
+    }
+    barr_shape = PyArray_DIMS(barr);
+    if (barr_shape[0] == num_iter+1)
+      beta_history = (double *)PyArray_DATA(barr);
 
     // recover the data and graph size (finally!)
     adjacency = (int16_t *)PyArray_DATA(arr1);
@@ -114,30 +137,17 @@ color_graph (PyObject *dummy, PyObject *args)
 
     // Create the graph from the adjacency matrix
     G = new Graph(graph_size, adjacency, q, generator);
-    Py_INCREF(G);
-    cout << "Created graph of size " << graph_size << " from adjacency matrix" << endl;
-    cout.flush();
 
     // Run Simulated annealing
-    mcmc = new  MCMC(G, q, generator);
-    Py_INCREF(mcmc);
-    cout << "Created MCMC" << endl;
-    cout.flush();
+    mcmc = new  MCMC(G, q, generator, energy_history, beta_history);
     mcmc->run(num_iter);
-    cout << "Finished running the MCMC." << endl;
-    cout.flush();
 
     // and the energy
     energy = G->hamiltonian();
-    cout << "Final energy " << energy << endl;
-    cout.flush();
     
     // Store the resulting coloring in the output vector
     for (int i = 0 ; i < graph_size ; i++) 
       output_vector[i] = G->vertices[i].color;
-
-    cout << "Stored up output in vector." << endl;
-    cout.flush();
 
     // Clean up
     Py_DECREF(G);
@@ -147,6 +157,8 @@ color_graph (PyObject *dummy, PyObject *args)
 
     Py_DECREF(arr1);
     Py_DECREF(oarr);
+    Py_DECREF(barr);
+    Py_DECREF(earr);
 
     // return the energy
     ret = Py_BuildValue("i", energy);
@@ -158,6 +170,8 @@ color_graph (PyObject *dummy, PyObject *args)
 
     Py_XDECREF(arr1);
     PyArray_XDECREF_ERR(oarr);
+    PyArray_XDECREF_ERR(barr);
+    PyArray_XDECREF_ERR(earr);
     return NULL;
 }
 
