@@ -8,16 +8,15 @@
 
 using namespace std;
 
-MCMC::MCMC(int N, int c, int q, default_random_engine &_generator)
-  :generator(_generator)
+MCMC::MCMC(Graph *G, int q, default_random_engine &_generator)
+  :generator(_generator), graph(G)
 {
   this->time = 0;
   this->beta = 1.e-2;
-  this->graph = new ErdosRenyi(N, (double)c/N, q, _generator);
 
   // update all distributions
   this->dist_color = new uniform_int_distribution<int>(1,q-1);
-  this->dist_vertices = new uniform_int_distribution<int>(0,N-1);
+  this->dist_vertices = new uniform_int_distribution<int>(0,G->size-1);
   this->dist_U = new uniform_real_distribution<double>(0.0, 1.0);
 
   // initial energy
@@ -37,9 +36,6 @@ MCMC::~MCMC()
 void MCMC::move()
 {
   this->time++;
-
-  // reduce the temperature according to schedule
-  this->cool();
 
   // pick vertex at random (that is not legally colored
   int v = (*this->dist_vertices)(this->generator);
@@ -73,6 +69,9 @@ void MCMC::move()
   // update energy
   this->H += delta;
   this->energy.push_back(this->H);
+  
+  // reduce the temperature according to schedule
+  this->cool();
 
   // if we did a move uphill, rewind beta
   if (delta > 0)
@@ -84,20 +83,36 @@ void MCMC::move()
 
 void MCMC::cool()
 {
-#define ALPHA 0.005
+  static int stuck_count = 0;
+
   double dE = this->energy.back() - this->energy[this->energy.size()-2];
-  //if (dE < 0.)
-    if (this->time % ((this->time/60000 + 1)*2000) == 0)
-      //this->beta *= 1. + this->energy.back()/this->graph->size;
+  if (dE < 0)
+    dE = -dE;
+
+  if (dE == 0)
+    stuck_count++;
+  else
+    stuck_count = 0;
+
+  if (this->time % ((this->time/60000 + 1)*2000) == 0)
+  {
+    if (stuck_count > 1000)
+    {
+      this->beta /= 1.11;
+      stuck_count = 0;
+    }
+    else
       this->beta *= 1.105;
-    if (this->beta > this->energy[0])
-      this->beta = this->energy[0];
+  }
+
+  if (this->beta > this->energy[0])
+    this->beta = this->energy[0];
 
 }
 
 void MCMC::run(int n_steps)
 {
-  for (int i ; i < n_steps ; i++)
+  for (int i = 0 ; i < n_steps ; i++)
   {
     this->move();
     if (this->H == 0)

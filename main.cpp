@@ -5,11 +5,11 @@
 #include "mcmc.h"
 
 #define N_GRAPH 1000
-#define N_STEPS 5000000
-#define Q_MIN 85
-#define Q_MAX 85
-#define C_MIN 495
-#define C_MAX 505
+#define N_STEPS 4000000
+#define Q_MIN 4
+#define Q_MAX 4
+#define C_MIN 5
+#define C_MAX 10
 
 using namespace std;
 

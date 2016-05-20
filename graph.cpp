@@ -21,7 +21,7 @@ std::ostream & operator<<(std::ostream &os, Vertex const &v)
   return os;
 }
 
-ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine &generator)
+Graph::Graph(int _size, double _p, int q, default_random_engine &generator)
   : size(_size)
 {
   std::uniform_real_distribution<double> distribution(0.0,1.0);
@@ -48,7 +48,30 @@ ErdosRenyi::ErdosRenyi(int _size, double _p, int q, default_random_engine &gener
     }
 }
 
-int ErdosRenyi::is_coloring_legal(int u)
+Graph::Graph(int _size, int16_t *adjacency, int q, default_random_engine &generator)
+  : size(_size)
+{
+  std::uniform_int_distribution<int> dist_color(1,q);
+
+  // Add all vertices to the vector
+  for (int u = 0 ; u < size ; u++)
+    vertices.push_back(Vertex(dist_color(generator)));
+
+  // Now draw all the edges at random in the graph
+  for (int u = 0 ; u < size ; u++)
+    for (int v = u+1 ; v < size ; v++)
+    {
+      // add the edge with if adjacency matrix has a one there
+      if (adjacency[u*size + v] == 1)
+      {
+        vertices[u].neighbors.push_back(v);
+        vertices[v].neighbors.push_back(u);
+      }
+
+    }
+}
+
+int Graph::is_coloring_legal(int u)
 {
   // check if a vertex is legally colored 
   
@@ -63,7 +86,7 @@ int ErdosRenyi::is_coloring_legal(int u)
   return true;
 }
 
-int ErdosRenyi::delta_h(int u, int new_color)
+int Graph::delta_h(int u, int new_color)
 {
   int delta = 0;
 
@@ -81,7 +104,7 @@ int ErdosRenyi::delta_h(int u, int new_color)
   return delta;
 }
 
-int ErdosRenyi::hamiltonian()
+int Graph::hamiltonian()
 {
   /*
    * Counts the number of invalid neighbor
@@ -96,7 +119,7 @@ int ErdosRenyi::hamiltonian()
   return H/2;
 }
 
-std::ostream &operator<<(std::ostream &os, ErdosRenyi const &m)
+std::ostream &operator<<(std::ostream &os, Graph const &m)
 {
   int i = 0;
   for (auto it = m.vertices.cbegin(); it != m.vertices.cend(); ++it)

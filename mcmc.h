@@ -1,5 +1,8 @@
+#ifndef __MCMC_H__
+#define __MCMC_H__
 
 #include <vector>
+#include <random>
 #include "graph.h"
 
 class MCMC
@@ -7,22 +10,21 @@ class MCMC
   public:
     
     int time;
-    int N;
     int c;
     int q;
     double beta;
-    double H;
+    int H;
     vector<double> beta_history;
-    vector<double> energy;
+    vector<int> energy;
 
     default_random_engine generator;
     uniform_int_distribution<int> *dist_color;
     uniform_int_distribution<int> *dist_vertices;
     uniform_real_distribution<double> *dist_U;
 
-    ErdosRenyi *graph;
+    Graph *graph;
 
-    MCMC(int N, int c, int q, default_random_engine &generator);
+    MCMC(Graph *G, int q, default_random_engine &generator);
     ~MCMC();
 
     void move();
@@ -33,3 +35,5 @@ class MCMC
 
     void save();
 };
+
+#endif // __MCMC_H__
