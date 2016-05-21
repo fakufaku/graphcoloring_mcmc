@@ -91,17 +91,17 @@ void MCMC::cool()
 
   // This schedule works great for q=3 d=4
   /*
-  if (this->H > 100)
+  if (this->H > this->H0/10)
   {
     if (this->time % 4000 == 0)
         this->beta *= 1.105;
   }
-  else if (this->H > 50)
+  else if (this->H > this->H0/20)
   {
     if (this->time % 40000 == 0)
         this->beta *= 1.105;
   }
-  else if (this->H > 10)
+  else if (this->H > this->H0/100)
   {
     if (this->time % 400000 == 0)
         this->beta *= 1.05;
@@ -112,9 +112,33 @@ void MCMC::cool()
         this->beta *= 1.01;
   }
   */
+  
+  // Trying to generalize
+  if (this->H > this->H0/10)
+  {
+    if (this->time % 4000 == 0)
+        this->beta *= 1.105;
+  }
+  else if (this->H > this->H0/20)
+  {
+    if (this->time % 40000 == 0)
+        this->beta *= 1.105;
+  }
+  else if (this->H > this->H0/100)
+  {
+    if (this->time % 400000 == 0)
+        this->beta *= 1.05;
+  }
+  else
+  {
+    if (this->time % 400000 == 0)
+        this->beta *= 1.01;
+  }
 
+  /*
   if (this->time % ((this->time/60000 + 1)*2000) == 0)
       this->beta *= 1.105;
+  */
 
   if (this->beta > this->H0)
     this->beta = this->H0;

@@ -17,7 +17,7 @@ n = 1000
 Q = np.arange(3,150)
 
 # number of iterations
-num_iter = 2000000
+num_iter = 50000000
 
 # energy
 success = np.zeros((n, Q.shape[0]))
