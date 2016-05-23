@@ -14,7 +14,7 @@ Vertex::Vertex(int _c)
 
 std::ostream & operator<<(std::ostream &os, Vertex const &v)
 {
-  os << "Color: " << v.color << ", Neighbors: ";
+  os << "Color: " << v.getColor() << ", Neighbors: ";
   for (auto it = v.neighbors.cbegin(); it != v.neighbors.cend(); ++it)
     os << " " << *it;
 

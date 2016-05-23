@@ -13,6 +13,8 @@ class Vertex
 
     Vertex(int _c);
 
+    int getColor() const { return this->color; }
+
     friend std::ostream &operator<<(std::ostream &os, Vertex const &m);
 };
 
