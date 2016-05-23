@@ -11,16 +11,16 @@ import util
 import pymcmc
 
 # number of nodes
-n = 1000 
+n = 100 
 
 # average node degree
-d = 4
+d = 23
 
 # number of colors to use
-q = 3
+q = 7
 
 # number of iterations
-num_iter = 10000000
+num_iter = 160000000
 
 # Create the random graph
 G = nx.erdos_renyi_graph(n, d/n)
@@ -37,6 +37,8 @@ energy = pymcmc.color_graph(A, q, num_iter, coloring, energy_history, beta_histo
 print 'Found energy:', energy
 print 'Check Hamiltonian just in case:', util.hamiltonian(A, coloring)
 
-plt.plot(energy_history)
-plt.plot(beta_history)
+
+plt.figure()
+plt.plot(energy_history[::10000])
+plt.plot(beta_history[::10000])
 plt.show()

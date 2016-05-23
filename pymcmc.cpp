@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <cstdint>
 #include <random>
 
@@ -150,8 +151,10 @@ color_graph (PyObject *dummy, PyObject *args)
       output_vector[i] = G->vertices[i].color;
 
     // Clean up
-    Py_DECREF(G);
-    Py_DECREF(mcmc);
+    delete G;
+    delete mcmc;
+    //Py_DECREF(G);
+    //Py_DECREF(mcmc);
     
     /*^^* code that makes use of arguments *^^*/
 

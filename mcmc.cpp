@@ -33,7 +33,6 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
 
 MCMC::~MCMC()
 {
-  delete this->graph;
   delete this->dist_color;
   delete this->dist_vertices;
   delete this->dist_U;
@@ -112,28 +111,48 @@ void MCMC::cool()
         this->beta *= 1.01;
   }
   */
+
   
   // Trying to generalize
+  /*
+#define ALPHA 0.105
   if (this->H > this->H0/10)
   {
     if (this->time % 4000 == 0)
-        this->beta *= 1.105;
+        this->beta *= 1. + ALPHA;
   }
   else if (this->H > this->H0/20)
   {
     if (this->time % 40000 == 0)
-        this->beta *= 1.105;
+        this->beta *= 1. + ALPHA;
   }
   else if (this->H > this->H0/100)
   {
     if (this->time % 400000 == 0)
-        this->beta *= 1.05;
+        this->beta *= 1. + ALPHA/2;
   }
   else
   {
-    if (this->time % 400000 == 0)
-        this->beta *= 1.01;
+    if (this->time % 4000000 == 0)
+        this->beta *= 1. + ALPHA/10;
   }
+  */
+
+#define ALPHA 0.005
+#define GAMMA 8000
+
+  int frac = this->H0/this->H;
+  if (frac < 1)
+    frac = 1;
+  int freeze_time = GAMMA*frac;
+
+  if (this->time % freeze_time == 0)
+    this->beta *= 1. + ALPHA/(frac);
+
+  /*
+#define ALPHA 0.00005
+  this->beta = log(1. + ALPHA*this->time);
+  */
 
   /*
   if (this->time % ((this->time/60000 + 1)*2000) == 0)
