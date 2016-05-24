@@ -14,8 +14,6 @@ class Vertex
     Vertex(int _c);
 
     int getColor() const { return this->color; }
-
-    friend std::ostream &operator<<(std::ostream &os, Vertex const &m);
 };
 
 class Graph
@@ -30,8 +28,6 @@ class Graph
     int is_coloring_legal(int u);
     int delta_h(int u, int new_color);
     int hamiltonian();
-
-    friend std::ostream &operator<<(std::ostream &os, Graph const &m);
 };
 
 #endif // __GRAPH_H__

@@ -12,15 +12,6 @@ Vertex::Vertex(int _c)
   // more stuff to do ?
 }
 
-std::ostream & operator<<(std::ostream &os, Vertex const &v)
-{
-  os << "Color: " << v.getColor() << ", Neighbors: ";
-  for (auto it = v.neighbors.cbegin(); it != v.neighbors.cend(); ++it)
-    os << " " << *it;
-
-  return os;
-}
-
 Graph::Graph(int _size, double _p, int q, default_random_engine &generator)
   : size(_size)
 {
@@ -119,15 +110,3 @@ int Graph::hamiltonian()
   return H/2;
 }
 
-std::ostream &operator<<(std::ostream &os, Graph const &m)
-{
-  int i = 0;
-  for (auto it = m.vertices.cbegin(); it != m.vertices.cend(); ++it)
-  {
-    os << i << ": " << *it << endl;
-    i++;
-  }
-  os << '\n';
-
-  return os;
-}
