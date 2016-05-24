@@ -75,7 +75,8 @@ void MCMC::move()
   this->H += delta;
   
   // reduce the temperature according to schedule
-  this->cool();
+  if (this->H != 0)
+      this->cool();
 
   // save the history
   if (this->energy != NULL)
@@ -137,7 +138,7 @@ void MCMC::cool()
         this->beta *= 1. + ALPHA/10;
   }
   */
-
+/*
 #define ALPHA 0.005
 #define GAMMA 8000
 
@@ -148,7 +149,7 @@ void MCMC::cool()
 
   if (this->time % freeze_time == 0)
     this->beta *= 1. + ALPHA/(frac);
-
+*/
   /*
 #define ALPHA 0.00005
   this->beta = log(1. + ALPHA*this->time);
@@ -159,9 +160,36 @@ void MCMC::cool()
       this->beta *= 1.105;
   */
 
+  // Implementing something close to gradient descent every M iterations with step sixe mu
+  int M = 100000;
+  double mu = 0.00002;
+  
+  if (this->time % M == 0){
+      double dH = 0;
+      double db = 0;
+      if (this->time == M){
+          db = this->beta_history[this->time-M];
+          dH = this->energy[this->time-1]-this->energy[this->time-M];
+      }
+      else{
+          db = this->beta_history[this->time-1]-this->beta_history[this->time-M-1];
+          dH = this->energy[this->time-1]-this->energy[this->time-M-1];
+      } 
+      //cout<< "db = "<< db << endl;
+      //cout<< "dH = "<< dH << endl;
+
+      if (db <= 0.0001)
+          db = 0.0001;
+      
+      this->beta = this->beta_history[this->time-1] - mu* (dH/db);
+      if (this->beta <= 0)
+          this->beta = this->beta_history[0];
+      //cout<< "beta = "<< this->beta << endl;
+  }
+/*
   if (this->beta > this->H0)
     this->beta = this->H0;
-
+*/
 }
 
 void MCMC::run(int n_steps)
