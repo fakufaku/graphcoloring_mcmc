@@ -14,6 +14,7 @@ class MCMC
     int c;
     int q;
     double beta;
+    double beta0;
     int H;
     int delta;
     int H0;
@@ -33,7 +34,7 @@ class MCMC
 
     void move();
     void cool();
-    void run(int n_steps);
+    void run(unsigned long n_steps);
 
     double get_energy() { return this->H; };
 

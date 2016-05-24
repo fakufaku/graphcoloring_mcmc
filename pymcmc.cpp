@@ -20,7 +20,7 @@ color_graph (PyObject *dummy, PyObject *args)
     PyObject *arg1=NULL, *out=NULL, *out2=NULL, *out3=NULL, *ret=NULL;
     PyArrayObject *arr1=NULL, *oarr=NULL, *barr=NULL, *earr=NULL;
     int q = 5;
-    int num_iter = 1000;
+    unsigned long num_iter = 1000;
     int energy = -1;
     int arr1_nd, oarr_nd, barr_nd, earr_nd;
     npy_intp *arr1_shape, *oarr_shape, *barr_shape, *earr_shape;
@@ -41,7 +41,7 @@ color_graph (PyObject *dummy, PyObject *args)
     std::default_random_engine generator(seed);
 
     // Parse the input arguments of the function
-    if (!PyArg_ParseTuple(args, "OiiO!O!O!", &arg1, &q, &num_iter,
+    if (!PyArg_ParseTuple(args, "OikO!O!O!", &arg1, &q, &num_iter,
         &PyArray_Type, &out, &PyArray_Type, &out2, &PyArray_Type, &out3)) return NULL;
 
     // First argument is the adjacency matrix of a graph

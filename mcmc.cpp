@@ -10,10 +10,11 @@ using namespace std;
 
 MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
     int32_t *_energy_history, double *_beta_history)
-  :generator(_generator), graph(G), energy(_energy_history), beta_history(_beta_history)
+  :energy(_energy_history), beta_history(_beta_history), generator(_generator), graph(G) 
 {
   this->time = 0;
-  this->beta = 1.e-2;
+  this->beta = 0.5;
+  this->beta0 = this->beta;
 
   // update all distributions
   this->dist_color = new uniform_int_distribution<int>(1,q-1);
@@ -86,8 +87,6 @@ void MCMC::move()
 
 void MCMC::cool()
 {
-  static int stuck_count = 0;
-
   // This schedule works great for q=3 d=4
   /*
   if (this->H > this->H0/10)
@@ -114,8 +113,7 @@ void MCMC::cool()
 
   
   // Trying to generalize
-  /*
-#define ALPHA 0.105
+#define ALPHA 0.005
   if (this->H > this->H0/10)
   {
     if (this->time % 4000 == 0)
@@ -136,10 +134,10 @@ void MCMC::cool()
     if (this->time % 4000000 == 0)
         this->beta *= 1. + ALPHA/10;
   }
-  */
 
-#define ALPHA 0.005
-#define GAMMA 8000
+  /*
+#define ALPHA 0.105
+#define GAMMA 4000
 
   int frac = this->H0/this->H;
   if (frac < 1)
@@ -148,11 +146,13 @@ void MCMC::cool()
 
   if (this->time % freeze_time == 0)
     this->beta *= 1. + ALPHA/(frac);
+    */
 
   /*
-#define ALPHA 0.00005
-  this->beta = log(1. + ALPHA*this->time);
-  */
+#define ALPHA 0.05
+  if (this->time % 2000 == 0)
+    this->beta = this->beta0 * log(1 + ALPHA*this->time/2000);
+    */
 
   /*
   if (this->time % ((this->time/60000 + 1)*2000) == 0)
@@ -164,9 +164,9 @@ void MCMC::cool()
 
 }
 
-void MCMC::run(int n_steps)
+void MCMC::run(unsigned long n_steps)
 {
-  for (int i = 0 ; i < n_steps ; i++)
+  for (unsigned long i = 0 ; i < n_steps ; i++)
   {
     this->move();
     if (this->H == 0)
