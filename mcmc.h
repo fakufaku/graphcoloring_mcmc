@@ -21,6 +21,15 @@ class MCMC
     int32_t *energy = NULL;
     double *beta_history = NULL;
 
+    double delta_leaky_avg = 0.0;
+    double refused_move_avg = 0.0;
+    double leaky_avg_param = 0.99;
+    unsigned long n_move = 0;
+
+    // keep track of best solution seen so far
+    int *best_coloring;
+    int32_t best_energy; 
+
     default_random_engine generator;
     uniform_int_distribution<int> *dist_color;
     uniform_int_distribution<int> *dist_vertices;
@@ -35,6 +44,7 @@ class MCMC
     void move();
     void cool();
     void run(unsigned long n_steps);
+    void save_coloring();
 
     double get_energy() { return this->H; };
 
