@@ -15,17 +15,20 @@ import pymcmc
 n = 1000 
 
 # average node degree
-d = 22
+d = 4.5
 
 # number of colors to use
-q = 7
+q = 3
 
 # number of iterations
 num_iter = 200000000
 
+# cooling schedule parameters
+p1_int = 1000
+p2_double = 0.005
+
 # Create the random graph
 G = nx.erdos_renyi_graph(n, d/n)
-#G = nx.random_regular_graph(d,n)
 A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
 #A,legal_coloring = generate_cooked_graph(n,d,q)
 #G = nx.from_numpy_matrix(np.matrix(A))
@@ -43,7 +46,9 @@ else:
     beta_history = np.zeros(1, dtype=np.double)
 
 # run the damn thing
-energy = pymcmc.color_graph(A, q, num_iter, coloring, energy_history, beta_history)
+energy = pymcmc.color_graph(A, q, num_iter, coloring, 
+                            energy_history, beta_history,
+                            p1_int, p2_double)
 
 print 'Found energy:', energy
 print 'Check Hamiltonian just in case:', util.hamiltonian(A, coloring)

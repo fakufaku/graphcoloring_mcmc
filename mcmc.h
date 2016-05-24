@@ -37,8 +37,11 @@ class MCMC
 
     Graph *graph;
 
+    int param1_int = 0;
+    double param2_double = 0.;
+
     MCMC(Graph *G, int q, default_random_engine &generator, 
-        int32_t *energy_history, double *beta_history);
+        int32_t *energy_history, double *beta_history, int p_int, double p_double);
     ~MCMC();
 
     void move();

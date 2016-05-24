@@ -14,13 +14,18 @@ import pymcmc
 n = 1000 
 
 # number of colors to use
-Q = np.arange(3,150)
+Q = np.arange(3,50)
 
 # number of iterations
-num_iter = 50000000
+num_iter = 10000000
 
 # energy
-success = np.zeros((n, Q.shape[0]))
+dmax = np.zeros((Q.shape[0]))
+first_fail = np.zeros((Q.shape[0]))
+
+# cooling schedule parameters
+p1_int = 1000
+p2_double = 0.105
 
 # Create all the necessary arrays
 coloring = np.zeros(n, dtype=np.int16)
@@ -35,12 +40,15 @@ for iq,q in enumerate(Q):
         A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
 
         # run the damn thing
-        energy = pymcmc.color_graph(A, q, num_iter, coloring, energy_history, beta_history)
+        energy = pymcmc.color_graph(A, q, num_iter, coloring, 
+                energy_history, beta_history,
+                p1_int, p2_double)
 
         if energy == 0:
-            success[d-1, iq] = 1
+            dmax[iq] = d
             d += 1
         else:
+            first_fail[iq] = energy
             break
 
 

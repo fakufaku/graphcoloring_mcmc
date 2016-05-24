@@ -9,8 +9,10 @@
 using namespace std;
 
 MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
-    int32_t *_energy_history, double *_beta_history)
-  :energy(_energy_history), beta_history(_beta_history), generator(_generator), graph(G)
+    int32_t *_energy_history, double *_beta_history,
+    int p_int, double p_double)
+  :energy(_energy_history), beta_history(_beta_history), generator(_generator), graph(G),
+  param1_int(p_int), param2_double(p_double)
 {
   this->time = 0;
   this->beta = 1.e-2;
@@ -155,15 +157,15 @@ void MCMC::cool()
   */
 
 #define ALPHA 0.105
-#define GAMMA 8000
+#define GAMMA 1000
 
   int frac = this->H0/this->H;
   if (frac < 1)
     frac = 1;
 
-  if (n_move == 1000)
+  if (n_move == param1_int)
   {
-    this->beta *= 1. + ALPHA/(frac);
+    this->beta *= 1. + param2_double/(frac);
     n_move = 0;
   }
 
