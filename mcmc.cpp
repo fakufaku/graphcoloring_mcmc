@@ -10,7 +10,7 @@ using namespace std;
 
 MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
     int32_t *_energy_history, double *_beta_history)
-  :generator(_generator), graph(G), energy(_energy_history), beta_history(_beta_history)
+  :energy(_energy_history), beta_history(_beta_history), generator(_generator), graph(G)
 {
   this->time = 0;
   this->beta = 1.e-2;
@@ -87,8 +87,6 @@ void MCMC::move()
 
 void MCMC::cool()
 {
-  static int stuck_count = 0;
-
   // This schedule works great for q=3 d=4
   /*
   if (this->H > this->H0/10)

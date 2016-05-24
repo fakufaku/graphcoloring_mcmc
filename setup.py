@@ -6,7 +6,7 @@ import os
 import platform
 import numpy as np
 
-if platform == 'Darwin':
+if platform.system() == 'Darwin':
     CCFLAGS = ['-std=c++14','-stdlib=libc++','-mmacosx-version-min=10.7']
     LDFLAGS = ['-stdlib=libc++','-mmacosx-version-min=10.7']
 else:
