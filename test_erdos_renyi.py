@@ -15,21 +15,22 @@ import pymcmc
 n = 1000 
 
 # average node degree
-d = 23
+d = 22
 
 # number of colors to use
 q = 7
 
 # number of iterations
-num_iter = 400000000
+num_iter = 200000000
 
 # Create the random graph
-#G = nx.erdos_renyi_graph(n, d/n)
+G = nx.erdos_renyi_graph(n, d/n)
 #G = nx.random_regular_graph(d,n)
-#A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
-A,legal_coloring = generate_cooked_graph(n,d,q)
+A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
+#A,legal_coloring = generate_cooked_graph(n,d,q)
+#G = nx.from_numpy_matrix(np.matrix(A))
 print 'Average vertex degree:', np.mean(A.sum(axis=1))
-print 'Cost of legal coloring:', util.hamiltonian(A, legal_coloring)
+#print 'Cost of legal coloring:', util.hamiltonian(A, legal_coloring)
 
 
 # Create all the necessary arrays
@@ -49,6 +50,7 @@ print 'Check Hamiltonian just in case:', util.hamiltonian(A, coloring)
 
 
 if energy_history.shape[0] == num_iter+1:
+
     plt.figure()
     plt.plot(energy_history[::10000])
     plt.plot(beta_history[::10000])

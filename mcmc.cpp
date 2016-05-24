@@ -192,7 +192,7 @@ void MCMC::cool()
 */
 }
 
-void MCMC::run(int n_steps)
+void MCMC::run(unsigned long n_steps)
 {
   for (int i = 0 ; i < n_steps ; i++)
   {
