@@ -15,7 +15,10 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
   param1_int(p_int), param2_double(p_double)
 {
   this->time = 0;
-  this->beta = 1.e-2;
+
+  // initial value for beta
+  this->beta = 0.5;
+  this->beta0 = this->beta;
 
   // update all distributions
   this->dist_color = new uniform_int_distribution<int>(1,q-1);
@@ -26,9 +29,13 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
   this->H = this->graph->hamiltonian();
   this->H0 = this->H;
 
+  this->last_H = this->H;
+  this->last_beta = this->beta0;
+  this->last_last_beta = 0.;
+
   // initialize the best current coloring
   this->best_coloring = new int[this->graph->size];
-  this->best_energy = this->H0;
+  save_coloring();
 
   // save history
   if (this->energy != NULL)
@@ -60,15 +67,11 @@ void MCMC::move()
   // compute delta H
   delta = this->graph->delta_h(v, c);
 
-  // the leaky average
-  delta_leaky_avg = leaky_avg_param*delta_leaky_avg + (1.-leaky_avg_param)*delta;
-
   if (delta <= 0)
   {
     // accept the move
     this->graph->vertices[v].color = c;
-    refused_move_avg = leaky_avg_param*refused_move_avg;
-    n_move++;
+    this->n_move++;
   }
   else
   {
@@ -78,13 +81,11 @@ void MCMC::move()
     // accept move wp exp(-beta*delta)
     if (p < exp(-this->beta*delta))
     {
-      refused_move_avg = leaky_avg_param*refused_move_avg;
       this->graph->vertices[v].color = c;
-      n_move++;
+      this->n_move++;
     }
     else
     {
-      refused_move_avg = leaky_avg_param*refused_move_avg + (1.-leaky_avg_param);
       // energy doesn't change
       delta = 0;
     }
@@ -156,9 +157,7 @@ void MCMC::cool()
   }
   */
 
-#define ALPHA 0.105
-#define GAMMA 1000
-
+  /*
   int frac = this->H0/this->H;
   if (frac < 1)
     frac = 1;
@@ -168,15 +167,13 @@ void MCMC::cool()
     this->beta *= 1. + param2_double/(frac);
     n_move = 0;
   }
+  */
 
-  /*
-#define ALPHA 0.000005
-  if (n_move == 1000)
+  if (n_move == param1_int)
   {
-    this->beta = log(1. + ALPHA*this->time);
+    this->beta = this->beta0*log(1. + param2_double*this->time);
     n_move = 0;
   }
-  */
 
   /*
   if (this->time % ((this->time/60000 + 1)*2000) == 0)
@@ -185,39 +182,24 @@ void MCMC::cool()
 
   // Implementing something close to gradient descent every M iterations with step sixe mu
   /*
-  int M = 100000;
-  double mu = 0.00002;
-  
-  if (this->time % M == 0){
-      double dH = 0;
-      double db = 0;
-      if (this->time == M){
-          db = this->beta_history[this->time-M];
-          dH = this->energy[this->time-1]-this->energy[this->time-M];
-      }
-      else{
-          db = this->beta_history[this->time-1]-this->beta_history[this->time-M-1];
-          dH = this->energy[this->time-1]-this->energy[this->time-M-1];
-      } 
+  if (this->n_move == param1_int)
+  {
+    double db = last_beta - last_last_beta;
+    int dH = this->H - last_H;
 
-      if (db <= 0.0001)
-          db = 0.0001;
-      
-      this->beta = this->beta_history[this->time-1] - mu* (dH/db);
-      if (this->beta <= 0)
-          this->beta = this->beta_history[0];
+    if (db <= 0.0001)
+      db = 0.0001;
+
+    this->beta = last_beta - param2_double * (dH/db);
+    if (this->beta <= 0)
+      this->beta = this->beta0;
+
+    last_last_beta = last_beta;
+    last_beta = this->beta;
+    last_H = this->H;
+    n_move = 0;
   }
   */
-/*
-  if (this->beta > this->H0)
-    this->beta = this->H0;
-*/
-  /*
-   * This strategy changes the beta logarithmically
-   * but enforces a minimum number of moves between
-   * change of the beta value
-   */
-#define MIN_MOVES 100
 
 }
 
@@ -240,9 +222,9 @@ void MCMC::run(unsigned long n_steps)
 
 void MCMC::save_coloring()
 {
-  for (int i = 0 ; i < graph->vertices.size() ; i++)
-    best_coloring[i] = graph->vertices[i].color;
-  best_energy = this->H;
+  for (int i = 0 ; i < this->graph->vertices.size() ; i++)
+    this->best_coloring[i] = this->graph->vertices[i].color;
+  this->best_energy = this->H;
 }
 
 void MCMC::save()

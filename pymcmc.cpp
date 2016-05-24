@@ -150,13 +150,18 @@ color_graph (PyObject *dummy, PyObject *args)
     mcmc->run(num_iter);
 
     // and the energy
-    //energy = G->hamiltonian();
-    energy = mcmc->best_energy;
-    
-    // Store the resulting coloring in the output vector
-    for (int i = 0 ; i < graph_size ; i++) 
-      output_vector[i] = mcmc->best_coloring[i];
-      //output_vector[i] = G->vertices[i].color;
+    if (mcmc->best_energy < G->hamiltonian())
+    {
+      energy = mcmc->best_energy;
+      for (int i = 0 ; i < graph_size ; i++) 
+        output_vector[i] = mcmc->best_coloring[i];
+    }
+    else
+    {
+      energy = G->hamiltonian();
+      for (int i = 0 ; i < graph_size ; i++) 
+        output_vector[i] = G->vertices[i].color;
+    }
 
     // Clean up
     delete G;

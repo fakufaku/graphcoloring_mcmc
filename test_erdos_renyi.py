@@ -15,17 +15,19 @@ import pymcmc
 n = 1000 
 
 # average node degree
-d = 4.5
+d = 23
 
 # number of colors to use
-q = 3
+q = 7
 
 # number of iterations
 num_iter = 200000000
 
 # cooling schedule parameters
 p1_int = 1000
-p2_double = 0.005
+p2_double = 0.0005
+#p1_int = 100000
+#p2_double = 0.00002
 
 # Create the random graph
 G = nx.erdos_renyi_graph(n, d/n)

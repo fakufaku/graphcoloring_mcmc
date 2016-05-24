@@ -25,7 +25,7 @@ first_fail = np.zeros((Q.shape[0]))
 
 # cooling schedule parameters
 p1_int = 1000
-p2_double = 0.105
+p2_double = 0.005
 
 # Create all the necessary arrays
 coloring = np.zeros(n, dtype=np.int16)

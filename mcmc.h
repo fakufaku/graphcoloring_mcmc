@@ -21,14 +21,11 @@ class MCMC
     int32_t *energy = NULL;
     double *beta_history = NULL;
 
-    double delta_leaky_avg = 0.0;
-    double refused_move_avg = 0.0;
-    double leaky_avg_param = 0.99;
     unsigned long n_move = 0;
 
     // keep track of best solution seen so far
     int *best_coloring;
-    int32_t best_energy; 
+    int best_energy; 
 
     default_random_engine generator;
     uniform_int_distribution<int> *dist_color;
@@ -39,6 +36,10 @@ class MCMC
 
     int param1_int = 0;
     double param2_double = 0.;
+
+    int last_H = 0;
+    double last_last_beta = 0.;
+    double last_beta = 0.;
 
     MCMC(Graph *G, int q, default_random_engine &generator, 
         int32_t *energy_history, double *beta_history, int p_int, double p_double);
