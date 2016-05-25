@@ -96,6 +96,8 @@ def run_mcmc(arg):
 # run many instances in parallel
 out = c[:].map_sync(run_mcmc, cartesian)
 
-energies = np.array([t[0] for t in out])
-color_vectors = [t[1] for t in out]
+np.savez('tuned_parameters_schedule'+str(schedule[nsched])+'.npz',
+    N=N, D=D, Q=Q, schedule=schedule[nsched], 
+    param1=params1[nsched], param2=params2[nsched], 
+    iterations=iterations, cartesian=cartesian, energy=out)
 
