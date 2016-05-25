@@ -24,6 +24,7 @@ q = 7
 num_iter = 200000000
 
 # cooling schedule parameters
+schedule = 0
 p1_int = 1000
 p2_double = 0.0005
 #p1_int = 100000
@@ -50,7 +51,7 @@ else:
 # run the damn thing
 energy = pymcmc.color_graph(A, q, num_iter, coloring, 
                             energy_history, beta_history,
-                            p1_int, p2_double)
+                            p1_int, p2_double, schedule)
 
 print 'Found energy:', energy
 print 'Check Hamiltonian just in case:', util.hamiltonian(A, coloring)
