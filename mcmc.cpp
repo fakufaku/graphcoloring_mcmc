@@ -228,7 +228,6 @@ void MCMC::run(unsigned long n_steps)
     if (this->H == 0)
       break;
   }
-  cout << "Total number of moves: " << this->total_move << endl;
 }
 
 void MCMC::save_coloring()

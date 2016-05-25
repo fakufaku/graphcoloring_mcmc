@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import networkx as nx
 import itertools as it
+import time
 
 import ipyparallel as ip
 
@@ -55,10 +56,6 @@ schedv = []
 
 cartesian = [e for e in it.product([N],D,Q,params1[nsched],params2[nsched].tolist(),[schedule[nsched]],[iterations],[loops])]
 
-print 'Number of combinations:',len(cartesian)
-
-
-
 def run_mcmc(arg):
     '''
     Just a wrapper to call the coloring algorithm;
@@ -92,6 +89,14 @@ def run_mcmc(arg):
     energy /= loops
 
     return energy
+
+# before we start to run everything, estimate the time
+arg = (N, D[-1], Q[-1], params1[nsched][-1], params2[nsched][-1], schedule[nsched], iterations, loops)
+start = time.time()
+run_mcmc(arg)
+end = time.time()
+print 'Time for one run:',end - start
+print 'Predicted time to terminate:', len(cartesian)*((end-start) + len(c.ids))/len(c.ids)
 
 # run many instances in parallel
 out = c[:].map_sync(run_mcmc, cartesian)
