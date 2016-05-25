@@ -42,8 +42,6 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
     this->energy[0] = this->H;
   if (this->beta_history != NULL)
     this->beta_history[0] = this->beta;
-  if (this->energy != NULL)
-    cout << this->energy.size() << endl;
 }
 
 MCMC::~MCMC()
@@ -228,8 +226,9 @@ void MCMC::run(unsigned long n_steps)
 
     // Stop if we reach 0 energy
     if (this->H == 0)
-      return;
+      break;
   }
+  cout << "Total number of moves: " << this->total_move << endl;
 }
 
 void MCMC::save_coloring()
