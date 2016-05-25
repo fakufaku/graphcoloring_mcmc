@@ -28,7 +28,7 @@ print coloring.shape
 energy = pymcmc.color_graph(A, q, num_iter, coloring, energy_history, beta_history, p1_int, p2_double, schedule)
 
 print energy
-print util.hamiltonian(A, vec)
+print util.hamiltonian(A, coloring)
 
 plt.plot(energy_history)
 plt.show()
