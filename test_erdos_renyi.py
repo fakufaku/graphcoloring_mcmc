@@ -25,8 +25,8 @@ num_iter = 200000000
 
 # cooling schedule parameters
 schedule = 0
-p1_int = 1000
-p2_double = 0.0005
+p1_int = 4000
+p2_double = 0.105
 #p1_int = 100000
 #p2_double = 0.00002
 
