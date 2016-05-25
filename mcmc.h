@@ -22,6 +22,7 @@ class MCMC
     double *beta_history = NULL;
 
     unsigned long n_move = 0;
+    unsigned long total_move = 0;
 
     // keep track of best solution seen so far
     int *best_coloring;
@@ -36,13 +37,15 @@ class MCMC
 
     int param1_int = 0;
     double param2_double = 0.;
+    int schedule = 0;
 
     int last_H = 0;
     double last_last_beta = 0.;
     double last_beta = 0.;
 
     MCMC(Graph *G, int q, default_random_engine &generator, 
-        int32_t *energy_history, double *beta_history, int p_int, double p_double);
+        int32_t *energy_history, double *beta_history, 
+        int p_int, double p_double, int _schedule);
     ~MCMC();
 
     void move();

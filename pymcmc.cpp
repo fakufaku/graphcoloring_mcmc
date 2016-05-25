@@ -19,7 +19,7 @@ color_graph (PyObject *dummy, PyObject *args)
 {
     PyObject *arg1=NULL, *out=NULL, *out2=NULL, *out3=NULL, *ret=NULL;
     PyArrayObject *arr1=NULL, *oarr=NULL, *barr=NULL, *earr=NULL;
-    int q = 5, param_int = 0;
+    int q = 5, param_int = 0, schedule = 0;
     double param_double = 0.;
     unsigned long num_iter = 1000;
     int energy = -1;
@@ -42,12 +42,12 @@ color_graph (PyObject *dummy, PyObject *args)
     std::default_random_engine generator(seed);
 
     // Parse the input arguments of the function
-    if (!PyArg_ParseTuple(args, "OikO!O!O!id", 
+    if (!PyArg_ParseTuple(args, "OikO!O!O!idi", 
           &arg1, &q, &num_iter,
         &PyArray_Type, &out, 
         &PyArray_Type, &out2, 
         &PyArray_Type, &out3,
-        &param_int, &param_double)) return NULL;
+        &param_int, &param_double, &schedule)) return NULL;
 
     // First argument is the adjacency matrix of a graph
     arr1 = (PyArrayObject*)PyArray_FROM_OTF(arg1, NPY_INT16, NPY_IN_ARRAY);
@@ -146,7 +146,7 @@ color_graph (PyObject *dummy, PyObject *args)
 
     // Run Simulated annealing
     mcmc = new  MCMC(G, q, generator, energy_history, beta_history, 
-                     param_int, param_double);
+                     param_int, param_double, schedule);
     mcmc->run(num_iter);
 
     // and the energy
@@ -166,8 +166,6 @@ color_graph (PyObject *dummy, PyObject *args)
     // Clean up
     delete G;
     delete mcmc;
-    //Py_DECREF(G);
-    //Py_DECREF(mcmc);
     
     /*^^* code that makes use of arguments *^^*/
 

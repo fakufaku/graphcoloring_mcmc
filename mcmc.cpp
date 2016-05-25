@@ -10,14 +10,14 @@ using namespace std;
 
 MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
     int32_t *_energy_history, double *_beta_history,
-    int p_int, double p_double)
+    int p_int, double p_double, int _schedule)
   :energy(_energy_history), beta_history(_beta_history), generator(_generator), graph(G),
-  param1_int(p_int), param2_double(p_double)
+  param1_int(p_int), param2_double(p_double), schedule(_schedule)
 {
   this->time = 0;
 
   // initial value for beta
-  this->beta = 0.5;
+  this->beta = 0.4;
   this->beta0 = this->beta;
 
   // update all distributions
@@ -42,6 +42,8 @@ MCMC::MCMC(Graph *G, int q, default_random_engine &_generator,
     this->energy[0] = this->H;
   if (this->beta_history != NULL)
     this->beta_history[0] = this->beta;
+  if (this->energy != NULL)
+    cout << this->energy.size() << endl;
 }
 
 MCMC::~MCMC()
@@ -72,6 +74,7 @@ void MCMC::move()
     // accept the move
     this->graph->vertices[v].color = c;
     this->n_move++;
+    this->total_move++;
   }
   else
   {
@@ -83,6 +86,7 @@ void MCMC::move()
     {
       this->graph->vertices[v].color = c;
       this->n_move++;
+      this->total_move++;
     }
     else
     {
@@ -107,100 +111,108 @@ void MCMC::move()
 
 void MCMC::cool()
 {
-  // This schedule works great for q=3 d=4
-  /*
-  if (this->H > this->H0/10)
+  switch (this->schedule)
   {
-    if (this->time % 4000 == 0)
-        this->beta *= 1.105;
-  }
-  else if (this->H > this->H0/20)
-  {
-    if (this->time % 40000 == 0)
-        this->beta *= 1.105;
-  }
-  else if (this->H > this->H0/100)
-  {
-    if (this->time % 400000 == 0)
-        this->beta *= 1.05;
-  }
-  else
-  {
-    if (this->time % 400000 == 0)
-        this->beta *= 1.01;
-  }
-  */
+    case 0:
+      if (n_move == param1_int)
+      {
+        this->beta = this->beta0*log(1. + param2_double*this->time);
+        n_move = 0;
+      }
+      break;
+
+    case 1:
+      // Trying to generalize
+      if (this->H > this->H0/10)
+      {
+        if (this->time % 4000 == 0)
+            this->beta *= 1. + param2_double;
+      }
+      else if (this->H > this->H0/20)
+      {
+        if (this->time % 40000 == 0)
+            this->beta *= 1. + param2_double;
+      }
+      else if (this->H > this->H0/100)
+      {
+        if (this->time % 400000 == 0)
+            this->beta *= 1. + param2_double/2;
+      }
+      else
+      {
+        if (this->time % 4000000 == 0)
+            this->beta *= 1. + param2_double/10;
+      }
+      break;
+
+    case 2:
+      // This schedule works great for q=3 d=4
+      if (this->H > this->H0/10)
+      {
+        if (this->time % 4000 == 0)
+            this->beta *= 1.105;
+      }
+      else if (this->H > this->H0/20)
+      {
+        if (this->time % 40000 == 0)
+            this->beta *= 1.105;
+      }
+      else if (this->H > this->H0/100)
+      {
+        if (this->time % 400000 == 0)
+            this->beta *= 1.05;
+      }
+      else
+      {
+        if (this->time % 400000 == 0)
+            this->beta *= 1.01;
+      }
+
+      break;
 
   
-  // Trying to generalize
-  /*
-#define ALPHA 0.105
-  if (this->H > this->H0/10)
-  {
-    if (this->time % 4000 == 0)
-        this->beta *= 1. + ALPHA;
+    case 3:
+
+      if (n_move == param1_int)
+      {
+        int frac = this->H0/this->H;
+        if (frac < 1)
+          frac = 1;
+
+        this->beta *= 1. + param2_double/(frac);
+        n_move = 0;
+      }
+
+      break;
+
+    case 4:
+      /* The first naive strategy we tried */
+      if (this->time % ((this->time/60000 + 1)*2000) == 0)
+          this->beta *= 1.105;
+      break;
+
+    case 5:
+      // Implementing something close to gradient descent every M iterations with step sixe mu
+      if (this->n_move == param1_int)
+      {
+        double db = last_beta - last_last_beta;
+        int dH = this->H - last_H;
+
+        if (db <= 0.0001)
+          db = 0.0001;
+
+        this->beta = last_beta - param2_double * (dH/db);
+        if (this->beta <= 0)
+          this->beta = this->beta0;
+
+        last_last_beta = last_beta;
+        last_beta = this->beta;
+        last_H = this->H;
+        n_move = 0;
+      }
+      break;
+
   }
-  else if (this->H > this->H0/20)
-  {
-    if (this->time % 40000 == 0)
-        this->beta *= 1. + ALPHA;
-  }
-  else if (this->H > this->H0/100)
-  {
-    if (this->time % 400000 == 0)
-        this->beta *= 1. + ALPHA/2;
-  }
-  else
-  {
-    if (this->time % 4000000 == 0)
-        this->beta *= 1. + ALPHA/10;
-  }
-  */
-
-  /*
-  int frac = this->H0/this->H;
-  if (frac < 1)
-    frac = 1;
-
-  if (n_move == param1_int)
-  {
-    this->beta *= 1. + param2_double/(frac);
-    n_move = 0;
-  }
-  */
-
-  if (n_move == param1_int)
-  {
-    this->beta = this->beta0*log(1. + param2_double*this->time);
-    n_move = 0;
-  }
-
-  /*
-  if (this->time % ((this->time/60000 + 1)*2000) == 0)
-      this->beta *= 1.105;
-  */
-
-  // Implementing something close to gradient descent every M iterations with step sixe mu
-  /*
-  if (this->n_move == param1_int)
-  {
-    double db = last_beta - last_last_beta;
-    int dH = this->H - last_H;
-
-    if (db <= 0.0001)
-      db = 0.0001;
-
-    this->beta = last_beta - param2_double * (dH/db);
-    if (this->beta <= 0)
-      this->beta = this->beta0;
-
-    last_last_beta = last_beta;
-    last_beta = this->beta;
-    last_H = this->H;
-    n_move = 0;
-  }
-  */
-
 }
 
 void MCMC::run(unsigned long n_steps)
