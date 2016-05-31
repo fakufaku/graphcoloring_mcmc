@@ -7,6 +7,7 @@ from scipy.io import loadmat
 import networkx as nx
 
 # custom modules here
+from parameter_tuning import *
 from generate_cooked_graph import *
 import util
 import pymcmc
@@ -15,20 +16,21 @@ import pymcmc
 n = 1000 
 
 # average node degree
-d = 23
+d = 13
 
 # number of colors to use
-q = 7
+q = 5
 
 # number of iterations
-num_iter = 200000000
+num_iter = 16000000000
 
 # cooling schedule parameters
-schedule = 3
-p1_int = 160000
-p2_double = 2.
-#p1_int = 100000
-#p2_double = 0.00002
+schedule = 0
+params = get_opt_params(schedule, d, q)
+print_params(schedule, d, q)
+p1_int = int(params[0])
+p2_double = float(params[1])
+print p1_int, p2_double
 
 # Create the random graph
 G = nx.erdos_renyi_graph(n, d/n)

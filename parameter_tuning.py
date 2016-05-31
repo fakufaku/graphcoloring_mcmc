@@ -61,15 +61,15 @@ def print_params(schedule, d, q):
   print 'schedule=%d d=%d q=%.5f' % (schedule, D[i_d], Q[i_q])
 
   for i in xrange(p1.shape[0]):
-    print '%f |' % p1[i],
+    print '%5d |' % p1[i],
     for j in xrange(p2.shape[0]):
-      print ' %f ' % score[i,j],
+      print ' %3.2f ' % score[i,j],
     print ''
 
   print '-----------'
   print '   ',
   for j in xrange(p2.shape[0]):
-    print p2[j],
+    print '%1.5f' % (p2[j]),
   print ''
   print '===================='
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 np.logspace(np.log2(0.0001), np.log2(2.0), num=6, base=2),
                 np.logspace(np.log2(0.00001), np.log2(0.01), num=6, base=2), ]
 
-    nsched = 0 # choice of schedule to tune
+    nsched = 1 # choice of schedule to tune
 
     # number of iterations
     iterations = 100000000
