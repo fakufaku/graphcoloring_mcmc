@@ -22,7 +22,7 @@ d = 13
 q = 5
 
 # number of iterations
-num_iter = 16000000000
+num_iter = 1600000000
 
 # cooling schedule parameters
 schedule = 0
