@@ -36,7 +36,7 @@ if __name__ == "__main__":
     import time
     import datetime
 
-    from parameter_tuning import get_opt_params
+    from parameter_tuning import get_opt_params, print_params
 
 
     # arguments
@@ -63,18 +63,20 @@ if __name__ == "__main__":
     d_avg = np.mean(A.sum(axis=1))
     n = A.shape[0]
 
+    print 'The GRAPH:'
+    print 'd_avg=',d_avg
+    print 'n=',n
+
     # get the optimal parameters
     params0 = get_opt_params(0, d_avg, q)
     params3 = get_opt_params(3, d_avg, q)
 
+    print_params(0, d_avg, q)
+    print_params(3, d_avg, q)
 
-    # prepare return buffers
-    energy_history = np.zeros(1, dtype=np.int32)
-    beta_history = np.zeros(1, dtype=np.double)
-    coloring = np.zeros(A.shape[0], dtype=np.int16)
 
     # cooling schedule parameters
-    repeat = 2
+    repeat = 4
     schedules = [0, 3]
 
     S = [schedules[0]]*repeat + [schedules[1]]*repeat
@@ -100,6 +102,7 @@ if __name__ == "__main__":
     out = c[:].map_sync(run_mcmc, args)
 
     # save all results in mat files
+    M = np.inf
     today = datetime.date.today()
     for i,o in enumerate(out):
 
@@ -114,7 +117,12 @@ if __name__ == "__main__":
         # a dictionary with the variables to save
         var = {'E': o[0], 'X': np.array([o[1]]).T}
 
+        if o[0] < M:
+          M = o[0]
+
         # save to the mat file
         savemat(out_fn, var)
+
+    print 'Best energy obtained:',M
 
 

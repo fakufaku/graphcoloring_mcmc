@@ -24,9 +24,9 @@ q = 7
 num_iter = 200000000
 
 # cooling schedule parameters
-schedule = 0
-p1_int = 4000
-p2_double = 0.105
+schedule = 3
+p1_int = 160000
+p2_double = 2.
 #p1_int = 100000
 #p2_double = 0.00002
 
@@ -41,12 +41,16 @@ print 'Average vertex degree:', np.mean(A.sum(axis=1))
 
 # Create all the necessary arrays
 coloring = np.zeros(A.shape[0], dtype=np.int16)
+'''
 if num_iter <= 320000000:
     energy_history = np.zeros(num_iter+1, dtype=np.int32)
     beta_history = np.zeros(num_iter+1, dtype=np.double)
 else:
     energy_history = np.zeros(1, dtype=np.int32)
     beta_history = np.zeros(1, dtype=np.double)
+'''
+energy_history = np.zeros(1, dtype=np.int32)
+beta_history = np.zeros(1, dtype=np.double)
 
 # run the damn thing
 energy = pymcmc.color_graph(A, q, num_iter, coloring, 
