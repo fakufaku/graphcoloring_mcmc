@@ -38,7 +38,7 @@ if __name__ == "__main__":
       print 'Ok: Number of colors is legal.'
 
     # Check that the energy corresponds to that of the coloring
-    Ep = util.hamiltonian(A, X[0,:])
+    Ep = util.hamiltonian(A, X[:,0])
     if E == Ep:
       print 'Ok: The declared energy is that of the coloring.'
     else:

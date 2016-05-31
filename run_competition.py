@@ -111,11 +111,8 @@ if __name__ == "__main__":
             '_id_%06d_sched_%d_p1_%d_p2_%.5f_energy_%d.mat' \
             % (rid, S[i], P1[i], P2[i], int(o[0]))
 
-        print o[0]
-        print o[1]
-
         # a dictionary with the variables to save
-        var = {'E': o[0], 'X': o[1]}
+        var = {'E': o[0], 'X': np.array([o[1]]).T}
 
         # save to the mat file
         savemat(out_fn, var)
