@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 np.logspace(np.log2(0.0001), np.log2(2.0), num=6, base=2),
                 np.logspace(np.log2(0.00001), np.log2(0.01), num=6, base=2), ]
 
-    nsched = 1 # choice of schedule to tune
+    nsched = 0 # choice of schedule to tune
 
     # number of iterations
     iterations = 100000000
