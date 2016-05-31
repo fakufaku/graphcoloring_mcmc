@@ -14,95 +14,145 @@ import ipyparallel as ip
 import util
 import pymcmc
 
-# number of nodes
-N = 1000
+def get_opt_params(schedule, d, q):
+  A = np.load('tuned_parameters_schedule'+str(schedule)+'.npz')
 
-# average node degree
-D = [3,11,13,15,18,21,23]
+  P = A['cartesian']
+  e = A['energy']
+  D = A['D']
+  Q = A['Q']
+  p1 = A['param1']
+  p2 = A['param2']
 
-# number of colors to use
-Q = [3,5,7,9]
+  # find closest degree and colors for which we have tuned parameters
+  i_d = np.argmin(np.abs(d - A['D']))
+  i_q = np.argmin(np.abs(q - A['Q']))
 
-# parameters to tune
-schedule = [0,3,5]
-params1 = [ [250, 500, 1000, 2000, 4000, 8000, 16000],
-            [250, 500, 1000, 2000, 4000, 8000, 16000],
-            [12500, 25000, 100000, 200000, 400000, 8000000], ]
-params2 = [ np.logspace(np.log2(0.0001), np.log2(0.5), num=5, base=2),
-            np.logspace(np.log2(0.0001), np.log2(0.5), num=5, base=2),
-            np.logspace(np.log2(0.00001), np.log2(0.01), num=5, base=2), ]
+  # find the indices
+  I = np.where(np.logical_and(P[:,1] == D[i_d], P[:,2] == Q[i_q]))
 
-nsched = 0 # choice of schedule to tune
+  score = e[I].reshape((p1.shape[0], p2.shape[0]))
 
-# number of iterations
-iterations = 2000000
+  m = np.argmin(e[I[0]])
+  params = P[I[0][m],3:5]
 
-# number of loops for every parameters combination
-loops = 10
+  return params
 
-c = ip.Client()
-print c.ids
+def print_params(schedule, d, q):
+  A = np.load('tuned_parameters_schedule'+str(schedule)+'.npz')
 
-NC = len(c.ids)
-print NC,'workers on the job'
+  P = A['cartesian']
+  e = A['energy']
+  p1 = A['param1']
+  p2 = A['param2']
 
-nv = []
-dv = []
-qv = []
-num_iter_v = []
-p1v = []
-p2v = []
-schedv = []
+  I = np.where(np.logical_and(P[:,1] == d, P[:,2] == q))
 
-cartesian = [e for e in it.product([N],D,Q,params1[nsched],params2[nsched].tolist(),[schedule[nsched]],[iterations],[loops])]
+  score = e[I].reshape((p1.shape[0], p2.shape[0]))
 
-def run_mcmc(arg):
-    '''
-    Just a wrapper to call the coloring algorithm;
-    '''
+  for i in xrange(p1.shape[0]):
+    print '%f |' % p1[i],
+    for j in xrange(p2.shape[0]):
+      print ' %f ' % score[i,j],
+    print ''
 
-    import pymcmc
-    import numpy as np
-    import networkx as nx
+  print '-----------'
+  print '   ',
+  for j in xrange(p2.shape[0]):
+    print p2[j],
 
-    n = arg[0]
-    d = arg[1]
-    q = arg[2]
-    p1 = int(arg[3])
-    p2 = float(arg[4])
-    schedule = arg[5]
-    num_iter = arg[6]
-    loops = arg[7]
 
-    # receptacle arrays
-    coloring = np.zeros((n), dtype=np.int16)
-    eh = np.zeros(0, dtype=np.int32)
-    bh = np.zeros(0, dtype=np.double)
+if __name__ == "__main__":
 
-    energy = 0.
-    for l in xrange(loops):
-        G = nx.erdos_renyi_graph(n, d/n)
-        A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
+  # number of nodes
+  N = 1000
 
-        energy += pymcmc.color_graph(A, q, num_iter, coloring, eh, bh, p1, p2, schedule)
+  # average node degree
+  D = [3,4,11,13,15,18,21,23]
 
-    energy /= loops
+  # number of colors to use
+  Q = [3,5,7,9]
 
-    return energy
+  # parameters to tune
+  schedule = [0,3,5]
+  params1 = [ [250, 500, 1000, 2000, 4000, 8000, 16000],
+              [250, 500, 1000, 2000, 4000, 8000, 16000],
+              [12500, 25000, 100000, 200000, 400000, 8000000], ]
+  params2 = [ np.logspace(np.log2(0.0001), np.log2(2.0), num=6, base=2),
+              np.logspace(np.log2(0.0001), np.log2(2.0), num=6, base=2),
+              np.logspace(np.log2(0.00001), np.log2(0.01), num=6, base=2), ]
 
-# before we start to run everything, estimate the time
-arg = (N, D[-1], Q[-1], params1[nsched][-1], params2[nsched][-1], schedule[nsched], iterations, loops)
-start = time.time()
-run_mcmc(arg)
-end = time.time()
-print 'Time for one run:',end - start
-print 'Predicted time to terminate:', len(cartesian)*((end-start) + len(c.ids))/len(c.ids)
+  nsched = 1 # choice of schedule to tune
 
-# run many instances in parallel
-out = c[:].map_sync(run_mcmc, cartesian)
+  # number of iterations
+  iterations = 20000000
 
-np.savez('tuned_parameters_schedule'+str(schedule[nsched])+'.npz',
-    N=N, D=D, Q=Q, schedule=schedule[nsched], 
-    param1=params1[nsched], param2=params2[nsched], 
-    iterations=iterations, cartesian=cartesian, energy=out)
+  # number of loops for every parameters combination
+  loops = 10
+
+  c = ip.Client()
+  print c.ids
+
+  NC = len(c.ids)
+  print NC,'workers on the job'
+
+  nv = []
+  dv = []
+  qv = []
+  num_iter_v = []
+  p1v = []
+  p2v = []
+  schedv = []
+
+  cartesian = [e for e in it.product([N],D,Q,params1[nsched],params2[nsched].tolist(),[schedule[nsched]],[iterations],[loops])]
+
+  def run_mcmc(arg):
+      '''
+      Just a wrapper to call the coloring algorithm;
+      '''
+
+      import pymcmc
+      import numpy as np
+      import networkx as nx
+
+      n = arg[0]
+      d = arg[1]
+      q = arg[2]
+      p1 = int(arg[3])
+      p2 = float(arg[4])
+      schedule = arg[5]
+      num_iter = arg[6]
+      loops = arg[7]
+
+      # receptacle arrays
+      coloring = np.zeros((n), dtype=np.int16)
+      eh = np.zeros(0, dtype=np.int32)
+      bh = np.zeros(0, dtype=np.double)
+
+      energy = 0.
+      for l in xrange(loops):
+          G = nx.erdos_renyi_graph(n, d/n)
+          A = np.array(nx.adjacency_matrix(G).todense(), dtype=np.int16)
+
+          energy += pymcmc.color_graph(A, q, num_iter, coloring, eh, bh, p1, p2, schedule)
+
+      energy /= loops
+
+      return energy
+
+  # before we start to run everything, estimate the time
+  arg = (N, D[-1], Q[-1], params1[nsched][-1], params2[nsched][-1], schedule[nsched], iterations, loops)
+  start = time.time()
+  run_mcmc(arg)
+  end = time.time()
+  print 'Time for one run:',end - start
+  print 'Predicted time to terminate:', len(cartesian)*(end-start)/NC
+
+  # run many instances in parallel
+  out = c[:].map_sync(run_mcmc, cartesian)
+
+  np.savez('tuned_parameters_schedule'+str(schedule[nsched])+'.npz',
+      N=N, D=D, Q=Q, schedule=schedule[nsched], 
+      param1=params1[nsched], param2=params2[nsched], 
+      iterations=iterations, cartesian=cartesian, energy=out)
 
