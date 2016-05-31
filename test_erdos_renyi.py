@@ -16,13 +16,13 @@ import pymcmc
 n = 1000 
 
 # average node degree
-d = 13
+d = 23
 
 # number of colors to use
-q = 5
+q = 7
 
 # number of iterations
-num_iter = 1600000000
+num_iter = 1000000000
 
 # cooling schedule parameters
 schedule = 0

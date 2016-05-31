@@ -27,6 +27,7 @@ def run_mcmc(arg):
 if __name__ == "__main__":
 
     import sys
+    import os
     import numpy as np
     import matplotlib.pyplot as plt
     from scipy.io import loadmat, savemat
@@ -76,7 +77,7 @@ if __name__ == "__main__":
 
 
     # cooling schedule parameters
-    repeat = 4
+    repeat = 3
     schedules = [0, 3]
 
     S = [schedules[0]]*repeat + [schedules[1]]*repeat
@@ -101,6 +102,12 @@ if __name__ == "__main__":
     # run many instances in parallel
     out = c[:].map_sync(run_mcmc, args)
 
+    # try to create a directory for the resulting files
+    try:
+        os.mkdir('./results/')
+    except OSError:
+        pass
+
     # save all results in mat files
     M = np.inf
     today = datetime.date.today()
@@ -110,7 +117,7 @@ if __name__ == "__main__":
         rid = np.random.choice(100000)
 
         # format the file name
-        out_fn = 'result_' + today.strftime('%Y%m%d') + \
+        out_fn = 'results/result_' + today.strftime('%Y%m%d') + \
             '_id_%06d_sched_%d_p1_%d_p2_%.5f_energy_%d.mat' \
             % (rid, S[i], P1[i], P2[i], int(o[0]))
 

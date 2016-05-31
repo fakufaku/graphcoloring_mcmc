@@ -27,7 +27,7 @@ Run for the competition
 
         time ipython ./run_competition.py -- <filename.mat> <num_iter> <q>
 
-4. Pick the best solution file and quickly check the solution by running
+4. Pick the best solution file (in `./results/` directory) and quickly check the solution by running
 
         ipython ./check_solution.py <adjacency.mat> <coloring.mat> <q>
 
