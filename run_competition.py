@@ -47,11 +47,13 @@ if __name__ == "__main__":
         q_opt = int(sys.argv[3])
     except IndexError:
         q_opt = None
+    matrix_var_name = sys.argv[4]
+    output_var_name = sys.argv[5]
 
 
     # Extract graph and number of color from mat file
     a = loadmat(filename)
-    A = np.array(a['A'], dtype=np.int16)
+    A = np.array(a[matrix_var_name], dtype=np.int16)
     try:
         q = a['q']
     except:
@@ -118,11 +120,11 @@ if __name__ == "__main__":
 
         # format the file name
         out_fn = 'results/result_' + today.strftime('%Y%m%d') + \
-            '_id_%06d_sched_%d_p1_%d_p2_%.5f_energy_%d.mat' \
-            % (rid, S[i], P1[i], P2[i], int(o[0]))
+            '_q_%d_id_%06d_sched_%d_p1_%d_p2_%.5f_energy_%d.mat' \
+            % (q, rid, S[i], P1[i], P2[i], int(o[0]))
 
         # a dictionary with the variables to save
-        var = {'E': o[0], 'X': np.array([o[1]]).T}
+        var = {'E': o[0], output_var_name: np.array([o[1]]).T}
 
         if o[0] < M:
           M = o[0]

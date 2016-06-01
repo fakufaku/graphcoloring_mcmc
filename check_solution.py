@@ -13,10 +13,12 @@ if __name__ == "__main__":
         q_opt = int(sys.argv[3])
     except IndexError:
         q_opt = None
+    matrix_var_name = sys.argv[4]
+    output_var_name = sys.argv[5]
 
     # load adjacency matrix
     a = loadmat(a_file)
-    A = np.array(a['A'], dtype=np.int16)
+    A = np.array(a[matrix_var_name], dtype=np.int16)
     try:
         q = a['q']
     except:
@@ -27,7 +29,7 @@ if __name__ == "__main__":
 
     # load the solution file
     b = loadmat(sol_file)
-    X = np.array(b['X'], dtype=np.int16)
+    X = np.array(b[output_var_name], dtype=np.int16)
     E = b['E']
 
     # check that the number of colors is correct
