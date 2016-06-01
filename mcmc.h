@@ -10,7 +10,7 @@ class MCMC
 {
   public:
     
-    int time;
+    unsigned long time;
     int c;
     int q;
     double beta;

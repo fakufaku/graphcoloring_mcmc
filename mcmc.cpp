@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <random>
 #include <math.h>
@@ -215,7 +214,7 @@ void MCMC::cool()
 
 void MCMC::run(unsigned long n_steps)
 {
-  for (int i = 0 ; i < n_steps ; i++)
+  for (unsigned long i = 0 ; i < n_steps ; i++)
   {
     // Make your move!
     this->move();
